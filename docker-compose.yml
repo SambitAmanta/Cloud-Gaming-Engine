@@ -1,0 +1,31 @@
+services:
+  # Distributed state and session coordination
+  redis:
+    image: redis:7-alpine
+    container_name: nebulastream-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  # Signaling Server, Docker Orchestrator & Static Client Host
+  gateway:
+    build:
+      context: ./services/signaling-orchestrator
+      dockerfile: Dockerfile
+    container_name: nebulastream-gateway
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+      - MAX_CONCURRENT_CONTAINERS=3
+      - CONTAINER_SIGNALING_URL=ws://host.docker.internal:8080/ws/agent
+      - RUNNER_IMAGE=nebulastream-runner:latest
+    volumes:
+      # Pass Docker Engine socket to allow orchestrator to spawn ephemeral sibling containers
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    restart: unless-stopped
+

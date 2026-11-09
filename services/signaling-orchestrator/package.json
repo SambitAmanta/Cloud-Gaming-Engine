@@ -1,0 +1,28 @@
+{
+  "name": "nebulastream-signaling-orchestrator",
+  "version": "1.0.0",
+  "description": "Distributed WebRTC Signaling and Ephemeral Container Orchestrator for NebulaStream",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "dockerode": "^4.0.2",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "uuid": "^9.0.1",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/dockerode": "^3.3.29",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "@types/uuid": "^9.0.8",
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
+

@@ -1,0 +1,55 @@
+# Stage 1: Build the Pion WebRTC Agent
+FROM golang:1.22-bookworm AS builder
+
+WORKDIR /src/agent
+COPY services/agent/go.mod ./
+# Download dependencies
+RUN go mod download || true
+
+COPY services/agent/ ./
+# Build static linux/amd64 binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /bin/agent .
+
+# Stage 2: Runtime Container
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV DISPLAY=:99
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=graphics,utility,video
+
+# Install display server, X dummy driver, Mesa OpenGL, FFmpeg, and PulseAudio
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xserver-xorg-video-dummy \
+    x11-xserver-utils \
+    x11-apps \
+    xvfb \
+    mesa-utils \
+    libgl1-mesa-glx \
+    libgl1-mesa-dri \
+    ffmpeg \
+    pulseaudio \
+    pulseaudio-utils \
+    ca-certificates \
+    curl \
+    kmod \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy Xorg dummy configuration
+COPY docker/xorg.conf /etc/X11/xorg.conf
+
+# Copy compiled Pion WebRTC Agent
+COPY --from=builder /bin/agent /app/agent
+
+# Copy Entrypoint Supervisor Script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh /app/agent
+
+EXPOSE 5004/udp
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]
+

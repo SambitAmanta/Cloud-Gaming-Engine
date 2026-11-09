@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NebulaStream | Distributed Cloud Gaming Engine</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #131b2e;
+      --border: #223254;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #a855f7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #4ade80;
+      --danger: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--text-muted);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle at center, #17233f 0%, #090d16 100%);
+      padding: 20px;
+    }
+
+    #playerContainer {
+      position: relative;
+      width: 100%;
+      max-width: 1280px;
+      aspect-ratio: 16 / 9;
+      background-color: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #remoteVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: crosshair;
+    }
+
+    /* Live WebRTC Performance Overlay */
+    #metricsHud {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .hud-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .hud-label {
+      color: var(--text-muted);
+    }
+
+    .hud-val {
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .hud-val.good {
+      color: var(--success);
+    }
+
+    .hud-val.warn {
+      color: #facc15;
+    }
+
+    /* Hint Overlay */
+    .instruction-pill {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .instruction-pill kbd {
+      background: #334155;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    footer {
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #fff;
+      border: none;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary-hover), #0369a1);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    button.danger {
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    button.danger:hover:not(:disabled) {
+      background: rgba(248, 113, 113, 0.15);
+      border-color: var(--danger);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo-badge">NEBULA</div>
+      <h1>Stream Cloud Engine</h1>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span id="statusText">Ready to Launch</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="playerContainer">
+      <video id="remoteVideo" autoplay playsinline muted></video>
+
+      <!-- Real-Time WebRTC Metrics HUD -->
+      <div id="metricsHud">
+        <div class="hud-item"><span class="hud-label">RTT Latency:</span> <span class="hud-val">-- ms</span></div>
+        <div class="hud-item"><span class="hud-label">Stream FPS:</span> <span class="hud-val">-- fps</span></div>
+        <div class="hud-item"><span class="hud-label">Bitrate:</span> <span class="hud-val">-- Mbps</span></div>
+        <div class="hud-item"><span class="hud-label">Resolution:</span> <span class="hud-val">--</span></div>
+        <div class="hud-item"><span class="hud-label">Jitter / Loss:</span> <span class="hud-val">--</span></div>
+      </div>
+
+      <!-- Quick Guidance -->
+      <div class="instruction-pill">
+        Click video to lock mouse &bull; Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> &bull; Press <kbd>ESC</kbd> to unlock
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <button id="startBtn" class="primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      Start Game Session
+    </button>
+    <button id="lockMouseBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+      Lock Mouse
+    </button>
+    <button id="fullscreenBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+      Fullscreen
+    </button>
+    <button id="stopBtn" class="danger" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>
+      Disconnect
+    </button>
+  </footer>
+
+  <script type="module" src="./src/player.js"></script>
+</body>
+</html>
+
