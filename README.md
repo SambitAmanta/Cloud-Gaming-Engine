@@ -71,9 +71,9 @@ Client Display ◄── HW Decode / Jitter ◄── Network (SRTP) ◄── N
 ```mermaid
 flowchart TB
     subgraph Client ["Client Browser (Zero Plugin)"]
-        UI["Web Player SPA (HTML5/CSS3)"]
-        Vid["HTML5 <video> Element"]
-        InMgr["InputManager (Pointer Lock + Keycode Mapper)"]
+        UI["Web Player SPA (HTML5 / CSS3)"]
+        Vid["HTML5 Video Player"]
+        InMgr["InputManager (Pointer Lock & Keycodes)"]
         Hud["WebRTC Stats HUD (getStats)"]
     end
 
@@ -81,7 +81,7 @@ flowchart TB
         WS["Signaling Gateway (Node.js/TS Express + ws)"]
         Orch["Container Orchestrator (Docker Engine SDK)"]
         State["Session State & 15s Heartbeat Reaper"]
-        Redis[("Redis Cluster\n- Session State\n- Heartbeat TTL\n- Pub/Sub")]
+        Redis[("Redis Cluster (Session State & Pub/Sub)")]
     end
 
     subgraph Host ["GPU Host Machine (NVIDIA RTX 5050 8GB)"]
@@ -90,7 +90,7 @@ flowchart TB
         subgraph Container ["Ephemeral Game Runner Container"]
             Xorg["Headless Xorg Server (Dummy Video Driver :99)"]
             Pulse["PulseAudio (Virtual null-sink GameAudio)"]
-            Game["Game Process / 3D Benchmark (glxgears/OpenGL)"]
+            Game["Game Process / 3D Benchmark (OpenGL)"]
             FFmpeg["FFmpeg NVENC Hardware Encoder"]
             Agent["Pion WebRTC Agent (Static Go Daemon)"]
             Uinput["Linux /dev/uinput Virtual Mouse & Keyboard"]
@@ -98,25 +98,25 @@ flowchart TB
     end
 
     %% Signaling Handshake
-    UI <-->|WebSocket: SDP Offer/Answer & ICE| WS
+    UI <-->|"WebSocket: SDP Offer/Answer & ICE"| WS
     WS <--> State
     State <--> Redis
-    WS -->|Spawn / Destroy| Orch
-    Orch -->|Unix Socket / Named Pipe| Docker
-    Docker -.->|Provisions Container| Container
+    WS -->|"Spawn / Destroy"| Orch
+    Orch -->|"Unix Socket / Named Pipe"| Docker
+    Docker -.->|"Provisions Container"| Container
 
     %% Media & Input Loop
-    Vid <===|WebRTC SRTP: H.264 Video Stream (UDP)| Agent
-    InMgr ===>|WebRTC DataChannel: 9-Byte Binary Packets (UDP)| Agent
+    Agent ==>|"WebRTC SRTP: H.264 Video Stream (UDP)"| Vid
+    InMgr ==>|"WebRTC DataChannel: 9-Byte Binary Packets (UDP)"| Agent
     
     %% In-Container Piping
-    Game -->|Renders 60 FPS| Xorg
-    Pulse -->|Captures Audio Monitor| FFmpeg
-    Xorg -->|Raw Frame Grab| FFmpeg
-    FFmpeg -->|H.264 RTP Stream (UDP :5004)| Agent
-    Agent -->|Deserialized Input Events| Uinput
-    Uinput -->|Virtual Hardware Input| Xorg
-    Hud -.->|Polls stats every 1s| Vid
+    Game -->|"Renders 60 FPS"| Xorg
+    Pulse -->|"Audio Monitor"| FFmpeg
+    Xorg -->|"Raw Frame Grab"| FFmpeg
+    FFmpeg -->|"H.264 RTP Stream (UDP :5004)"| Agent
+    Agent -->|"Deserialized Input Events"| Uinput
+    Uinput -->|"Virtual Hardware Input"| Xorg
+    Hud -.->|"Polls stats every 1s"| Vid
 ```
 
 ---

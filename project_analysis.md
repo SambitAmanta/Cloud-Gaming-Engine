@@ -86,14 +86,14 @@ flowchart TB
     end
 
     %% Signaling
-    UI <-->|WebSocket: SDP Offer/Answer, ICE| WS
+    UI <-->|"WebSocket: SDP Offer/Answer, ICE"| WS
     WS <--> Redis
-    WS -->|Provision / Terminate| Orch
-    Orch -->|Docker Engine SDK| DockerDaemon
+    WS -->|"Provision / Terminate"| Orch
+    Orch -->|"Docker Engine SDK"| DockerDaemon
 
     %% Direct Peer-to-Peer Media & Input
-    VC <===|WebRTC SRTP: H.264 / Opus (UDP)| Pion1
-    IC ===>|WebRTC DataChannel: Binary Inputs (UDP)| Pion1
+    Pion1 ==>|"WebRTC SRTP: H.264 / Opus (UDP)"| VC
+    IC ==>|"WebRTC DataChannel: Binary Inputs (UDP)"| Pion1
     
     %% In-Container Interconnects
     Game1 -->|Render Frames| Xorg1
